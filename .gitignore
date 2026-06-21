@@ -1,0 +1,21 @@
+# 编译产物
+build/
+studentms
+studentms.exe
+*.o
+*.obj
+
+# 临时文件
+students.bak
+students.tmp
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# IDE/编辑器
+.vscode/
+.idea/
+*.swp
+*.swo
+*~

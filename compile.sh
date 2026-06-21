@@ -1,7 +1,9 @@
 #!/bin/bash
 
 # ============================================================
-# 编译脚本 —— 自动检测编译器，优先使用 CMake
+# 编译 / 清理脚本 —— 自动检测编译器，优先使用 CMake
+#   用法: ./compile.sh          # 编译
+#         ./compile.sh clean    # 清理编译产物
 # ============================================================
 
 set -euo pipefail
@@ -9,6 +11,18 @@ set -euo pipefail
 SRC="src/main.c src/menu.c src/student.c src/input.c src/fileio.c src/display.c"
 TARGET="studentms"
 BUILD_DIR="build"
+
+# ---- 清理模式 ----
+if [[ "${1:-}" == "clean" ]]; then
+    echo "========================================"
+    echo "  清理编译中间文件"
+    echo "========================================"
+    rm -rf "$BUILD_DIR"
+    rm -f "$TARGET" "$TARGET.exe"
+    rm -f "students.bak" "students.tmp"
+    echo "[OK] 已清理。"
+    exit 0
+fi
 
 echo "========================================"
 echo "  学生信息管理系统 —— 编译脚本"

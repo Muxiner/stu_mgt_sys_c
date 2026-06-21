@@ -18,6 +18,7 @@
 /*
  * 从 DATA_FILE 加载学生数据。
  * 采用 fgets + sscanf 逐行解析，每行必须恰好包含 5 个字段。
+ * 使用尾插法保持文件原始顺序。
  * 对每条记录二次校验学号、年龄、成绩的合法范围，
  * 不合规的行将被跳过并输出警告。
  *
@@ -30,9 +31,10 @@ int load_from_file(Student **head) {
         return 0;
     }
 
-    char line[512];     /* 单行缓冲区，足够容纳一条完整记录 */
-    int line_no = 0;    /* 当前行号，用于错误定位 */
-    int loaded = 0;     /* 成功加载的记录数 */
+    char line[512];      /* 单行缓冲区，足够容纳一条完整记录 */
+    int line_no = 0;     /* 当前行号，用于错误定位 */
+    int loaded = 0;      /* 成功加载的记录数 */
+    Student *tail = NULL; /* 尾指针，用于保持文件顺序 */
 
     while (fgets(line, sizeof(line), fp)) {
         line_no++;
@@ -83,9 +85,13 @@ int load_from_file(Student **head) {
         node->age   = age;
         node->score = score;
 
-        /* 头插法加入链表 */
-        node->next = *head;
-        *head = node;
+        /* 尾插法加入链表，保持文件原始顺序 */
+        if (tail) {
+            tail->next = node;
+        } else {
+            *head = node;
+        }
+        tail = node;
         loaded++;
     }
     fclose(fp);

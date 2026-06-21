@@ -80,7 +80,7 @@ int main(void) {
             modify_student(head);
             break;
         case 6:
-            sort_by_score(&head);
+            sort_students(&head);
             break;
         case 7:
             show_statistics(head);

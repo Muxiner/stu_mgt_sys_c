@@ -87,7 +87,7 @@ void      display_all(const Student *head);
 Student*  search_by_id(Student *head, int id);
 int       delete_student(Student **head);
 int       modify_student(Student *head);
-void      sort_by_score(Student **head);
+void      sort_students(Student **head);
 void      show_statistics(const Student *head);
 void      free_list(Student **head);
 

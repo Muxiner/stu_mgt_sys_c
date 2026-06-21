@@ -250,32 +250,62 @@ int modify_student(Student *head) {
 }
 
 /*
- * 按成绩排序（冒泡排序，交换结点指针）。
- * 支持升序（1）和降序（2）两种方式。
+ * 按指定字段排序（冒泡排序，交换结点指针）。
+ * 支持按学号、姓名、年龄、成绩排序，
+ * 每种字段均支持升序（1）和降序（2）两种方式。
  * 排序完成后自动显示结果。
  */
-void sort_by_score(Student **head) {
+void sort_students(Student **head) {
     if (!*head || !(*head)->next) {
         printf("(记录不足，无需排序)\n");
         return;
     }
 
-    int choice;
+    int field;
+    printf("排序字段:\n");
+    printf("  1) 学号    2) 姓名    3) 年龄\n");
+    printf("  4) 成绩\n");
+    if (safe_get_int("请选择: ", 1, 4, &field) != 0) return;
+
+    int order;
     printf("排序方式: 1) 升序  2) 降序\n");
-    if (safe_get_int("请选择: ", 1, 2, &choice) != 0) return;
+    if (safe_get_int("请选择: ", 1, 2, &order) != 0) return;
 
     int swapped;
     Student *pTmp;
     do {
         swapped = 0;
-        Student **pp = head;           /* pp 指向"指向当前结点"的指针 */
+        Student **pp = head;
         while (*pp && (*pp)->next) {
             int should_swap = 0;
-            if (choice == 1) {
-                if ((*pp)->score > (*pp)->next->score) should_swap = 1;
-            } else {
-                if ((*pp)->score < (*pp)->next->score) should_swap = 1;
+
+            switch (field) {
+            case 1: /* 学号 */
+                if (order == 1)
+                    should_swap = ((*pp)->id > (*pp)->next->id);
+                else
+                    should_swap = ((*pp)->id < (*pp)->next->id);
+                break;
+            case 2: /* 姓名 */
+                if (order == 1)
+                    should_swap = (strcmp((*pp)->name, (*pp)->next->name) > 0);
+                else
+                    should_swap = (strcmp((*pp)->name, (*pp)->next->name) < 0);
+                break;
+            case 3: /* 年龄 */
+                if (order == 1)
+                    should_swap = ((*pp)->age > (*pp)->next->age);
+                else
+                    should_swap = ((*pp)->age < (*pp)->next->age);
+                break;
+            case 4: /* 成绩 */
+                if (order == 1)
+                    should_swap = ((*pp)->score > (*pp)->next->score);
+                else
+                    should_swap = ((*pp)->score < (*pp)->next->score);
+                break;
             }
+
             if (should_swap) {
                 /* 交换两个相邻结点 */
                 pTmp = *pp;

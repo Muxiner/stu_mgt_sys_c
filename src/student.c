@@ -296,8 +296,8 @@ int modify_student(Student *head) {
 }
 
 /*
- * 显示统计信息：总人数、男女比例、成绩统计、年龄分布。
- * 遍历一次链表计算所有指标，O(n) 时间复杂度。
+ * 显示统计信息：总人数、男女比例、成绩统计、年龄分布、学院分布。
+ * 使用 print_field 保证中英文混合对齐。
  */
 void show_statistics(const Student *head) {
     if (!head) {
@@ -326,22 +326,36 @@ void show_statistics(const Student *head) {
         else                   age_o25++;
     }
 
+#define LW 13  /* 标签列宽（显示列，含冒号） */
+    char buf[64];
+
     printf("\n========== 统计信息 ==========\n");
-    printf("总人数:    %d\n", count);
-    printf("男生人数:  %d (%.1f%%)\n", male,   male   * 100.0f / count);
-    printf("女生人数:  %d (%.1f%%)\n", female, female * 100.0f / count);
+    snprintf(buf, sizeof(buf), "%d", count);
+    print_field("总人数:", LW, 1); printf("%s\n", buf);
+    snprintf(buf, sizeof(buf), "%d (%.1f%%)", male, male*100.0f/count);
+    print_field("男生人数:", LW, 1); printf("%s\n", buf);
+    snprintf(buf, sizeof(buf), "%d (%.1f%%)", female, female*100.0f/count);
+    print_field("女生人数:", LW, 1); printf("%s\n", buf);
 
     printf("\n--- 成绩统计 ---\n");
-    printf("平均分:    %.2f\n", total / count);
-    printf("最高分:    %.2f\n", max_score);
-    printf("最低分:    %.2f\n", min_score);
-    printf("不及格人数: %d (<60分)\n", fail_count);
+    snprintf(buf, sizeof(buf), "%.2f", total / count);
+    print_field("平均分:", LW, 1); printf("%s\n", buf);
+    snprintf(buf, sizeof(buf), "%.2f", max_score);
+    print_field("最高分:", LW, 1); printf("%s\n", buf);
+    snprintf(buf, sizeof(buf), "%.2f", min_score);
+    print_field("最低分:", LW, 1); printf("%s\n", buf);
+    snprintf(buf, sizeof(buf), "%d (<60分)", fail_count);
+    print_field("不及格人数:", LW, 1); printf("%s\n", buf);
 
     printf("\n--- 年龄分布 ---\n");
-    printf("≤18岁:    %d (%.1f%%)\n", age_u18,   age_u18   * 100.0f / count);
-    printf("19-22岁:  %d (%.1f%%)\n", age_19_22, age_19_22 * 100.0f / count);
-    printf("23-25岁:  %d (%.1f%%)\n", age_23_25, age_23_25 * 100.0f / count);
-    printf("≥26岁:    %d (%.1f%%)\n", age_o25,   age_o25   * 100.0f / count);
+    snprintf(buf, sizeof(buf), "%d (%.1f%%)", age_u18, age_u18*100.0f/count);
+    print_field("≤18岁:", LW, 1); printf("%s\n", buf);
+    snprintf(buf, sizeof(buf), "%d (%.1f%%)", age_19_22, age_19_22*100.0f/count);
+    print_field("19-22岁:", LW, 1); printf("%s\n", buf);
+    snprintf(buf, sizeof(buf), "%d (%.1f%%)", age_23_25, age_23_25*100.0f/count);
+    print_field("23-25岁:", LW, 1); printf("%s\n", buf);
+    snprintf(buf, sizeof(buf), "%d (%.1f%%)", age_o25, age_o25*100.0f/count);
+    print_field("≥26岁:", LW, 1); printf("%s\n", buf);
 
     /* --- 学院分布 --- */
     printf("\n--- 学院分布 ---\n");
@@ -368,9 +382,13 @@ void show_statistics(const Student *head) {
         }
     }
     for (int i = 0; i < cs_count; i++) {
-        printf("  %-20s %d (%.1f%%)\n",
-               cs[i].name, cs[i].cnt, cs[i].cnt * 100.0f / count);
+        snprintf(buf, sizeof(buf), "%d (%.1f%%)",
+                 cs[i].cnt, cs[i].cnt * 100.0f / count);
+        print_field(cs[i].name, LW + 6, 1);
+        printf("%s\n", buf);
     }
+#undef LW
+#undef VW
     printf("==============================\n\n");
 }
 

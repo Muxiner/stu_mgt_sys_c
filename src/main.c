@@ -6,6 +6,7 @@
  */
 
 #include "student.h"
+#include "sort.h"
 
 int main(void) {
     Student *head = NULL;   /* 链表头指针，是整个系统的数据根 */

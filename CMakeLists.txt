@@ -8,6 +8,7 @@ add_executable(studentms
     src/main.c
     src/menu.c
     src/student.c
+    src/sort.c
     src/input.c
     src/fileio.c
     src/display.c

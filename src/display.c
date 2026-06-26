@@ -32,13 +32,13 @@ int str_display_width(const char *s) {
         /* 宽字符转换失败，使用字节级估算 */
         int w = 0;
         for (const char *p = s; *p; p++) {
-            if ((unsigned char)*p >= 0x80) {
-                w += 2;
-                /* 跳过多字节字符的后续字节 */
-                while ((unsigned char)(*(++p)) >= 0x80 && (unsigned char)*p < 0xC0) {}
-                p--;
-            } else {
+            if ((unsigned char)*p < 0x80) {
                 w++;
+            } else {
+                w += 2;
+                /* 跳过 UTF-8 续字节 (0x80~0xBF)，用 p[1] 预查防越界 */
+                while ((unsigned char)p[1] >= 0x80 && (unsigned char)p[1] < 0xC0)
+                    p++;
             }
         }
         return w;

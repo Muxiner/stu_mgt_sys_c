@@ -70,6 +70,12 @@ int load_from_file(Student **head) {
             continue;
         }
 
+        /* 校验学号唯一性（防御文件被外部篡改导致重复） */
+        if (search_by_id(*head, id)) {
+            printf("[!] 第 %d 行学号 %d 重复，已跳过。\n", line_no, id);
+            continue;
+        }
+
         Student *node = create_node();
         if (!node) {
             fclose(fp);
@@ -161,6 +167,7 @@ int save_to_file(const Student *head) {
 
     if (rename(TEMP_FILE, DATA_FILE) != 0) {
         printf("[!] 替换正式文件失败，数据保存在 %s 中。\n", TEMP_FILE);
+        remove(BACKUP_FILE);   /* 清理残留备份 */
         return -1;
     }
 

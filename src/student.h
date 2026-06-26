@@ -51,18 +51,21 @@
 #define COL_SCORE  10  /* 成绩列宽 */
 
 /* ============================================================
- * 数据结构：单向链表结点
+ * 数据结构：单向链表结点 + 哈希链
  *
- * 每个结点存储一名学生的完整信息，通过 next 指针串联。
+ * 每个结点存储一名学生的完整信息。
+ * next 组成单向链表（用于遍历显示、排序、释放）。
+ * hash_next 用于哈希表冲突链（提供 O(1) ID 查找）。
  * 链表不设最大容量上限，内存按需动态分配。
  * ============================================================ */
 typedef struct Student {
-    int    id;               /* 学号（主键，唯一） */
-    char   name[NAME_LEN];   /* 姓名               */
-    char   gender[GENDER_LEN]; /* 性别（"男"/"女"）*/
-    int    age;              /* 年龄               */
-    float  score;            /* 成绩（保留两位小数）*/
-    struct Student *next;    /* 指向下一结点       */
+    int    id;                  /* 学号（主键，唯一） */
+    char   name[NAME_LEN];      /* 姓名               */
+    char   gender[GENDER_LEN];  /* 性别（"男"/"女"） */
+    int    age;                 /* 年龄               */
+    float  score;               /* 成绩（保留两位小数）*/
+    struct Student *next;       /* 链表后继           */
+    struct Student *hash_next;  /* 哈希表冲突链       */
 } Student;
 
 /* ============================================================
@@ -84,7 +87,7 @@ int  safe_get_float(const char *prompt, float min_val, float max_val, float *out
 Student* create_node(void);
 int       add_student(Student **head);
 void      display_all(const Student *head);
-Student*  search_by_id(Student *head, int id);
+Student*  search_by_id(int id);
 int       delete_student(Student **head);
 int       modify_student(Student *head);
 void      show_statistics(const Student *head);
@@ -98,6 +101,13 @@ int save_to_file(const Student *head);
 void mark_data_dirty(void);
 void mark_data_clean(void);
 int  is_data_dirty(void);
+
+/* ---- 哈希表 (hash.c) ---- */
+void     hash_init(void);
+void     hash_destroy(void);
+Student* hash_find(int id);
+void     hash_insert(Student *node);
+void     hash_remove(int id);
 
 /* ---- 菜单 (menu.c) ---- */
 void print_menu(void);

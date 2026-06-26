@@ -14,6 +14,7 @@
  */
 
 #include "student.h"
+#include "hash.h"
 
 /* 解析出的记录临时结构，用于在 parse_record_line 和 append_new_node 间传递 */
 struct ParsedRecord {
@@ -25,7 +26,7 @@ struct ParsedRecord {
 };
 
 /* 前向声明 */
-static int  parse_record_line(const char *line, int line_no, Student *head,
+static int  parse_record_line(const char *line, int line_no,
                                struct ParsedRecord *rec);
 static Student* append_new_node(Student **head, Student **tail,
                                  const struct ParsedRecord *rec);
@@ -62,7 +63,7 @@ int load_from_file(Student **head) {
 
         struct ParsedRecord rec;
 
-        if (parse_record_line(line, line_no, *head, &rec) != 0)
+        if (parse_record_line(line, line_no, &rec) != 0)
             continue;
 
         if (!append_new_node(head, &tail, &rec)) {
@@ -84,7 +85,7 @@ int load_from_file(Student **head) {
  * 对 sscanf 字段数、年龄/成绩/学号范围、学号唯一性逐一检查。
  * 返回 0 表示解析成功，-1 表示该行应跳过（已输出警告）。
  */
-static int parse_record_line(const char *line, int line_no, Student *head,
+static int parse_record_line(const char *line, int line_no,
                               struct ParsedRecord *rec) {
     int matched = sscanf(line, "%d %31s %7s %d %f",
                          &rec->id, rec->name, rec->gender, &rec->age, &rec->score);
@@ -104,7 +105,7 @@ static int parse_record_line(const char *line, int line_no, Student *head,
         printf("[!] 第 %d 行学号 %d 无效，已跳过。\n", line_no, rec->id);
         return -1;
     }
-    if (search_by_id(head, rec->id)) {
+    if (search_by_id(rec->id)) {
         printf("[!] 第 %d 行学号 %d 重复，已跳过。\n", line_no, rec->id);
         return -1;
     }
@@ -134,6 +135,7 @@ static Student* append_new_node(Student **head, Student **tail,
         *head = node;
     }
     *tail = node;
+    hash_insert(node);
     return node;
 }
 

@@ -12,4 +12,5 @@ add_executable(studentms
     src/input.c
     src/fileio.c
     src/display.c
+    src/hash.c
 )

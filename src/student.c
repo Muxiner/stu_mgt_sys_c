@@ -6,6 +6,7 @@
  */
 
 #include "student.h"
+#include "hash.h"
 
 static int data_dirty = 0;   /* 是否有未保存的修改 */
 
@@ -25,6 +26,7 @@ Student* create_node(void) {
         return NULL;
     }
     node->next = NULL;
+    node->hash_next = NULL;
     return node;
 }
 
@@ -61,7 +63,7 @@ int add_student(Student **head) {
         free(node);
         return -1;
     }
-    if (search_by_id(*head, node->id)) {
+    if (search_by_id(node->id)) {
         printf("[!] 学号 %d 已存在，添加失败。\n", node->id);
         free(node);
         return -1;
@@ -91,9 +93,10 @@ int add_student(Student **head) {
         return -1;
     }
 
-    /* 头插法链入链表 */
+    /* 头插法链入链表 + 哈希表 */
     node->next = *head;
     *head = node;
+    hash_insert(node);
     printf("[OK] 学生 %s (学号: %d) 添加成功。\n", node->name, node->id);
     mark_data_dirty();
     return 0;
@@ -142,11 +145,8 @@ void display_all(const Student *head) {
  * 按学号查找学生。
  * 遍历链表，匹配则返回结点指针，否则返回 NULL。
  */
-Student* search_by_id(Student *head, int id) {
-    for (; head; head = head->next) {
-        if (head->id == id) return head;
-    }
-    return NULL;
+Student* search_by_id(int id) {
+    return hash_find(id);
 }
 
 /*
@@ -180,6 +180,7 @@ int delete_student(Student **head) {
     else      *head = cur->next;   /* 删除的是头结点 */
 
     printf("[OK] 学生 %s (学号: %d) 已删除。\n", cur->name, cur->id);
+    hash_remove(cur->id);
     free(cur);
     mark_data_dirty();
     return 0;
@@ -239,7 +240,7 @@ int modify_student(Student *head) {
     int id;
     if (safe_get_int("请输入要修改的学号: ", MIN_ID, MAX_ID, &id) != 0) return -1;
 
-    Student *s = search_by_id(head, id);
+    Student *s = search_by_id(id);
     if (!s) {
         printf("[!] 未找到学号为 %d 的学生。\n", id);
         return -1;
@@ -340,5 +341,6 @@ void free_list(Student **head) {
         cur = cur->next;
         free(tmp);
     }
-    *head = NULL;  /* 安全置空，防御 double-free */
+    *head = NULL;
+    hash_destroy();
 }

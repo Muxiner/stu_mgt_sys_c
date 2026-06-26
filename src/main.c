@@ -46,7 +46,7 @@ static int do_menu_action(Student **head, int choice) {
     case 3: {
         int id;
         if (safe_get_int("请输入要查找的学号: ", MIN_ID, MAX_ID, &id) != 0) break;
-        Student *s = search_by_id(*head, id);
+        Student *s = search_by_id(id);
         if (s) print_student_table_row(s);
         else   printf("[!] 未找到学号为 %d 的学生。\n", id);
         break;

@@ -204,34 +204,41 @@ static void sort_merge(Student **head, int field, int order) {
     *head = sort_merge_rec(*head);
 }
 
-/* ---- 快速排序辅助：三路分区 + 递归 ---- */
-static Student* sort_quick_rec(Student *head) {
-    if (!head || !head->next) return head;
-
-    /* 选头结点为 pivot */
-    Student *pivot = head;
-    Student *less = NULL, *equal = NULL, *greater = NULL;
-    Student *less_tail = NULL, *equal_tail = NULL, *greater_tail = NULL;
-
-    /* 遍历剩余结点，分入三个子链表 */
-    Student *cur = head->next;
+/* ---- 快速排序辅助：三路分区 ---- */
+static void partition_three_way(Student *pivot,
+                                 Student **less, Student **less_tail,
+                                 Student **equal, Student **equal_tail,
+                                 Student **greater, Student **greater_tail) {
+    Student *cur = pivot->next;
     while (cur) {
         Student *next = cur->next;
         cur->next = NULL;
         int cmp = _cmp(cur, pivot);
 
         if (cmp < 0) {
-            if (!less) { less = cur; less_tail = cur; }
-            else       { less_tail->next = cur; less_tail = cur; }
+            if (!*less) { *less = cur; *less_tail = cur; }
+            else        { (*less_tail)->next = cur; *less_tail = cur; }
         } else if (cmp == 0) {
-            if (!equal) { equal = cur; equal_tail = cur; }
-            else        { equal_tail->next = cur; equal_tail = cur; }
+            if (!*equal) { *equal = cur; *equal_tail = cur; }
+            else         { (*equal_tail)->next = cur; *equal_tail = cur; }
         } else {
-            if (!greater) { greater = cur; greater_tail = cur; }
-            else          { greater_tail->next = cur; greater_tail = cur; }
+            if (!*greater) { *greater = cur; *greater_tail = cur; }
+            else           { (*greater_tail)->next = cur; *greater_tail = cur; }
         }
         cur = next;
     }
+}
+
+/* ---- 快速排序辅助：递归 ---- */
+static Student* sort_quick_rec(Student *head) {
+    if (!head || !head->next) return head;
+
+    Student *pivot = head;
+    Student *less = NULL, *equal = NULL, *greater = NULL;
+    Student *less_tail = NULL, *equal_tail = NULL, *greater_tail = NULL;
+
+    partition_three_way(pivot, &less, &less_tail,
+                        &equal, &equal_tail, &greater, &greater_tail);
 
     /* pivot 自身链入 equal 链表头部 */
     pivot->next = equal;
@@ -343,31 +350,38 @@ static void sort_comb(Student **head, int field, int order) {
  *   5) 快速排序（O(n log n)）
  *   6) 梳排序（冒泡改进）
  * ============================================================ */
+/* 交互式选择排序算法，返回 1~6 或 -1（用户取消） */
+static int select_sort_algorithm(void) {
+    printf("排序算法:\n");
+    printf("  1) 冒泡排序（默认）  2) 选择排序\n");
+    printf("  3) 插入排序          4) 归并排序\n");
+    printf("  5) 快速排序          6) 梳排序\n");
+    int algo = 1;  /* 默认冒泡 */
+    char buf[INPUT_BUF_LEN];
+    if (safe_get_string_allow_empty("请选择 (默认1): ", buf, sizeof(buf)) != 0) return -1;
+    if (buf[0] != '\0') {
+        char *endptr;
+        long v = strtol(buf, &endptr, 10);
+        if (endptr == buf || *endptr != '\0' || v < 1 || v > 6) {
+            printf("[!] 输入无效，使用默认算法（冒泡排序）。\n");
+        } else {
+            algo = (int)v;
+        }
+    }
+    return algo;
+}
+
+/* ============================================================
+ * 排序入口 — 选择算法、字段、升降序后执行排序
+ * ============================================================ */
 void sort_students(Student **head) {
     if (!*head || !(*head)->next) {
         printf("(记录不足，无需排序)\n");
         return;
     }
 
-    /* ---- 选择排序算法 ---- */
-    printf("排序算法:\n");
-    printf("  1) 冒泡排序（默认）  2) 选择排序\n");
-    printf("  3) 插入排序          4) 归并排序\n");
-    printf("  5) 快速排序          6) 梳排序\n");
-    int algo = 1;  /* 默认冒泡 */
-    {
-        char buf[INPUT_BUF_LEN];
-        if (safe_get_string_allow_empty("请选择 (默认1): ", buf, sizeof(buf)) != 0) return;
-        if (buf[0] != '\0') {
-            char *endptr;
-            long v = strtol(buf, &endptr, 10);
-            if (endptr == buf || *endptr != '\0' || v < 1 || v > 6) {
-                printf("[!] 输入无效，使用默认算法（冒泡排序）。\n");
-            } else {
-                algo = (int)v;
-            }
-        }
-    }
+    int algo = select_sort_algorithm();
+    if (algo < 0) return;
 
     /* ---- 选择排序字段 ---- */
     int field;

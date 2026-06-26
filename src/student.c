@@ -23,6 +23,23 @@ Student* create_node(void) {
 }
 
 /*
+ * 交互式输入性别。
+ * allow_empty=0 时必须输入"男"或"女"；allow_empty=1 时空输入直接返回。
+ * 返回 0 成功，-1 EOF/错误。
+ */
+static int input_gender(const char *prompt, char *gender_buf, int allow_empty) {
+    while (1) {
+        int rc = allow_empty
+            ? safe_get_string_allow_empty(prompt, gender_buf, GENDER_LEN)
+            : safe_get_string(prompt, gender_buf, GENDER_LEN);
+        if (rc != 0) return -1;
+        if (allow_empty && gender_buf[0] == '\0') return 0;
+        if (strcmp(gender_buf, "男") == 0 || strcmp(gender_buf, "女") == 0) return 0;
+        printf("[!] 性别只能输入\"男\"或\"女\"。\n");
+    }
+}
+
+/*
  * 交互式添加一名学生。
  * 依次输入学号、姓名、性别、年龄、成绩，均做合法性校验。
  * 学号唯一性由 search_by_id 保证，重复则拒绝添加并释放已分配内存。
@@ -51,13 +68,9 @@ int add_student(Student **head) {
     }
 
     /* --- 性别：仅接受"男"或"女" --- */
-    while (1) {
-        if (safe_get_string("性别 (男/女): ", node->gender, GENDER_LEN) != 0) {
-            free(node);
-            return -1;
-        }
-        if (strcmp(node->gender, "男") == 0 || strcmp(node->gender, "女") == 0) break;
-        printf("[!] 性别只能输入\"男\"或\"女\"。\n");
+    if (input_gender("性别 (男/女): ", node->gender, 0) != 0) {
+        free(node);
+        return -1;
     }
 
     /* --- 年龄 --- */
@@ -174,6 +187,41 @@ int delete_student(Student **head) {
 }
 
 /*
+ * 可选的整数字段修改：空输入跳过，否则解析并校验范围。
+ * 返回 0 成功/跳过，-1 EOF。
+ */
+static int modify_optional_int(const char *prompt, char *buf, size_t buf_size,
+                                int min_val, int max_val, int *dest) {
+    if (safe_get_string_allow_empty(prompt, buf, buf_size) != 0) return -1;
+    if (buf[0] == '\0') return 0;
+    char *endptr;
+    long val = strtol(buf, &endptr, 10);
+    if (endptr != buf && *endptr == '\0' && val >= min_val && val <= max_val) {
+        *dest = (int)val;
+    } else {
+        printf("[!] 输入无效，保留原值。\n");
+    }
+    return 0;
+}
+
+/*
+ * 可选的浮点字段修改：空输入跳过，否则解析并校验范围。
+ */
+static int modify_optional_float(const char *prompt, char *buf, size_t buf_size,
+                                  float min_val, float max_val, float *dest) {
+    if (safe_get_string_allow_empty(prompt, buf, buf_size) != 0) return -1;
+    if (buf[0] == '\0') return 0;
+    char *endptr;
+    float val = strtof(buf, &endptr);
+    if (endptr != buf && *endptr == '\0' && val >= min_val && val <= max_val) {
+        *dest = val;
+    } else {
+        printf("[!] 输入无效，保留原值。\n");
+    }
+    return 0;
+}
+
+/*
  * 按学号修改学生信息。
  * 用户可选择性地修改姓名、性别、年龄、成绩；
  * 直接按回车表示保留原值（不修改）。
@@ -206,40 +254,19 @@ int modify_student(Student *head) {
     }
 
     /* 修改性别：空输入跳过，否则校验"男"/"女" */
-    while (1) {
-        if (safe_get_string_allow_empty("新性别 (男/女): ", buf, sizeof(buf)) != 0) return -1;
-        if (buf[0] == '\0') break;
-        if (strcmp(buf, "男") == 0 || strcmp(buf, "女") == 0) {
-            strncpy(s->gender, buf, GENDER_LEN - 1);
-            s->gender[GENDER_LEN - 1] = '\0';
-            break;
-        }
-        printf("[!] 性别只能输入\"男\"或\"女\"。\n");
+    if (input_gender("新性别 (男/女): ", buf, 1) != 0) return -1;
+    if (buf[0] != '\0') {
+        strncpy(s->gender, buf, GENDER_LEN - 1);
+        s->gender[GENDER_LEN - 1] = '\0';
     }
 
     /* 修改年龄：空输入跳过，否则校验范围 */
-    if (safe_get_string_allow_empty("新年龄 (0~150): ", buf, sizeof(buf)) != 0) return -1;
-    if (buf[0] != '\0') {
-        char *endptr;
-        long val = strtol(buf, &endptr, 10);
-        if (endptr != buf && *endptr == '\0' && val >= MIN_AGE && val <= MAX_AGE) {
-            s->age = (int)val;
-        } else {
-            printf("[!] 年龄输入无效，保留原值。\n");
-        }
-    }
+    if (modify_optional_int("新年龄 (0~150): ", buf, sizeof(buf),
+                             MIN_AGE, MAX_AGE, &s->age) != 0) return -1;
 
     /* 修改成绩：空输入跳过，否则校验范围 */
-    if (safe_get_string_allow_empty("新成绩 (0~100): ", buf, sizeof(buf)) != 0) return -1;
-    if (buf[0] != '\0') {
-        char *endptr;
-        float val = strtof(buf, &endptr);
-        if (endptr != buf && *endptr == '\0' && val >= MIN_SCORE && val <= MAX_SCORE) {
-            s->score = val;
-        } else {
-            printf("[!] 成绩输入无效，保留原值。\n");
-        }
-    }
+    if (modify_optional_float("新成绩 (0~100): ", buf, sizeof(buf),
+                               MIN_SCORE, MAX_SCORE, &s->score) != 0) return -1;
 
     printf("[OK] 学生信息已更新。\n");
 

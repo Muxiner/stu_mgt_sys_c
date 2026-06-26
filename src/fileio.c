@@ -15,6 +15,15 @@
 
 #include "student.h"
 
+/* 前向声明 */
+static int  parse_record_line(const char *line, int line_no, Student *head,
+                               int *id, char *name, char *gender,
+                               int *age, float *score);
+static Student* append_new_node(Student **head, Student **tail,
+                                 int id, const char *name, const char *gender,
+                                 int age, float score);
+static void rollback_on_write_failure(int has_backup);
+
 /*
  * 从 DATA_FILE 加载学生数据。
  * 采用 fgets + sscanf 逐行解析，每行必须恰好包含 5 个字段。
@@ -48,56 +57,14 @@ int load_from_file(Student **head) {
         float score;
         char name[NAME_LEN], gender[GENDER_LEN];
 
-        /* 期望解析 5 个字段：学号 姓名 性别 年龄 成绩 */
-        int matched = sscanf(line, "%d %31s %7s %d %f",
-                             &id, name, gender, &age, &score);
-        if (matched != 5) {
-            printf("[!] 第 %d 行字段数不正确，已跳过。\n", line_no);
+        if (parse_record_line(line, line_no, *head,
+                              &id, name, gender, &age, &score) != 0)
             continue;
-        }
 
-        /* --- 业务范围二次校验（防御文件被外部篡改） --- */
-        if (age < MIN_AGE || age > MAX_AGE) {
-            printf("[!] 第 %d 行年龄 %d 超出范围，已跳过。\n", line_no, age);
-            continue;
-        }
-        if (score < MIN_SCORE || score > MAX_SCORE) {
-            printf("[!] 第 %d 行成绩 %.2f 超出范围，已跳过。\n", line_no, score);
-            continue;
-        }
-        if (id < MIN_ID || id > MAX_ID) {
-            printf("[!] 第 %d 行学号 %d 无效，已跳过。\n", line_no, id);
-            continue;
-        }
-
-        /* 校验学号唯一性（防御文件被外部篡改导致重复） */
-        if (search_by_id(*head, id)) {
-            printf("[!] 第 %d 行学号 %d 重复，已跳过。\n", line_no, id);
-            continue;
-        }
-
-        Student *node = create_node();
-        if (!node) {
+        if (!append_new_node(head, &tail, id, name, gender, age, score)) {
             fclose(fp);
             return -1;
         }
-
-        /* 填充结点数据 */
-        node->id    = id;
-        strncpy(node->name,   name,   NAME_LEN - 1);
-        node->name[NAME_LEN - 1]     = '\0';
-        strncpy(node->gender, gender, GENDER_LEN - 1);
-        node->gender[GENDER_LEN - 1] = '\0';
-        node->age   = age;
-        node->score = score;
-
-        /* 尾插法加入链表，保持文件原始顺序 */
-        if (tail) {
-            tail->next = node;
-        } else {
-            *head = node;
-        }
-        tail = node;
         loaded++;
     }
     fclose(fp);
@@ -106,6 +73,78 @@ int load_from_file(Student **head) {
         printf("[OK] 已从 %s 加载 %d 条记录。\n", DATA_FILE, loaded);
     }
     return 0;
+}
+
+/*
+ * 解析并校验一行记录。
+ * 对 sscanf 字段数、年龄/成绩/学号范围、学号唯一性逐一检查。
+ * 返回 0 表示解析成功，-1 表示该行应跳过（已输出警告）。
+ */
+static int parse_record_line(const char *line, int line_no, Student *head,
+                              int *id, char *name, char *gender,
+                              int *age, float *score) {
+    int matched = sscanf(line, "%d %31s %7s %d %f", id, name, gender, age, score);
+    if (matched != 5) {
+        printf("[!] 第 %d 行字段数不正确，已跳过。\n", line_no);
+        return -1;
+    }
+    if (*age < MIN_AGE || *age > MAX_AGE) {
+        printf("[!] 第 %d 行年龄 %d 超出范围，已跳过。\n", line_no, *age);
+        return -1;
+    }
+    if (*score < MIN_SCORE || *score > MAX_SCORE) {
+        printf("[!] 第 %d 行成绩 %.2f 超出范围，已跳过。\n", line_no, *score);
+        return -1;
+    }
+    if (*id < MIN_ID || *id > MAX_ID) {
+        printf("[!] 第 %d 行学号 %d 无效，已跳过。\n", line_no, *id);
+        return -1;
+    }
+    if (search_by_id(head, *id)) {
+        printf("[!] 第 %d 行学号 %d 重复，已跳过。\n", line_no, *id);
+        return -1;
+    }
+    return 0;
+}
+
+/*
+ * 创建新结点、填充数据并以尾插法链入链表。
+ * 返回新结点指针，失败返回 NULL（内存不足）。
+ */
+static Student* append_new_node(Student **head, Student **tail,
+                                 int id, const char *name, const char *gender,
+                                 int age, float score) {
+    Student *node = create_node();
+    if (!node) return NULL;
+
+    node->id = id;
+    strncpy(node->name, name, NAME_LEN - 1);
+    node->name[NAME_LEN - 1] = '\0';
+    strncpy(node->gender, gender, GENDER_LEN - 1);
+    node->gender[GENDER_LEN - 1] = '\0';
+    node->age = age;
+    node->score = score;
+
+    if (*tail) {
+        (*tail)->next = node;
+    } else {
+        *head = node;
+    }
+    *tail = node;
+    return node;
+}
+
+/*
+ * 写入失败时的回滚操作：删除临时文件，从备份恢复原文件。
+ */
+static void rollback_on_write_failure(int has_backup) {
+    printf("[!] 写入临时文件失败，数据未保存。\n");
+    remove(TEMP_FILE);
+    if (has_backup) {
+        if (rename(BACKUP_FILE, DATA_FILE) != 0) {
+            printf("[!] 恢复备份失败！请手动检查 %s。\n", BACKUP_FILE);
+        }
+    }
 }
 
 /*
@@ -155,13 +194,7 @@ int save_to_file(const Student *head) {
 
     /* 步骤 3：验证并替换 */
     if (write_err) {
-        printf("[!] 写入临时文件失败，数据未保存。\n");
-        remove(TEMP_FILE);
-        if (orig) {
-            if (rename(BACKUP_FILE, DATA_FILE) != 0) {
-                printf("[!] 恢复备份失败！请手动检查 %s。\n", BACKUP_FILE);
-            }
-        }
+        rollback_on_write_failure(orig != NULL);
         return -1;
     }
 

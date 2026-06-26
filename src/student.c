@@ -283,7 +283,7 @@ int modify_student(Student *head) {
 }
 
 /*
- * 显示统计信息：总人数、平均分、最高分、最低分、不及格人数。
+ * 显示统计信息：总人数、男女比例、成绩统计、年龄分布。
  * 遍历一次链表计算所有指标，O(n) 时间复杂度。
  */
 void show_statistics(const Student *head) {
@@ -292,9 +292,10 @@ void show_statistics(const Student *head) {
         return;
     }
 
-    int count = 0;
+    int count = 0, male = 0, female = 0;
     float total = 0.0f, max_score = -1.0f, min_score = 101.0f;
-    int fail_count = 0;               /* 不及格人数（<60 分） */
+    int fail_count = 0;
+    int age_u18 = 0, age_19_22 = 0, age_23_25 = 0, age_o25 = 0;
 
     for (const Student *p = head; p; p = p->next) {
         count++;
@@ -302,14 +303,32 @@ void show_statistics(const Student *head) {
         if (p->score > max_score) max_score = p->score;
         if (p->score < min_score) min_score = p->score;
         if (p->score < 60.0f) fail_count++;
+
+        if (strcmp(p->gender, "男") == 0) male++;
+        else female++;
+
+        if (p->age <= 18)      age_u18++;
+        else if (p->age <= 22) age_19_22++;
+        else if (p->age <= 25) age_23_25++;
+        else                   age_o25++;
     }
 
     printf("\n========== 统计信息 ==========\n");
     printf("总人数:    %d\n", count);
+    printf("男生人数:  %d (%.1f%%)\n", male,   male   * 100.0f / count);
+    printf("女生人数:  %d (%.1f%%)\n", female, female * 100.0f / count);
+
+    printf("\n--- 成绩统计 ---\n");
     printf("平均分:    %.2f\n", total / count);
     printf("最高分:    %.2f\n", max_score);
     printf("最低分:    %.2f\n", min_score);
     printf("不及格人数: %d (<60分)\n", fail_count);
+
+    printf("\n--- 年龄分布 ---\n");
+    printf("≤18岁:    %d (%.1f%%)\n", age_u18,   age_u18   * 100.0f / count);
+    printf("19-22岁:  %d (%.1f%%)\n", age_19_22, age_19_22 * 100.0f / count);
+    printf("23-25岁:  %d (%.1f%%)\n", age_23_25, age_23_25 * 100.0f / count);
+    printf("≥26岁:    %d (%.1f%%)\n", age_o25,   age_o25   * 100.0f / count);
     printf("==============================\n\n");
 }
 

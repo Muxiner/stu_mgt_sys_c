@@ -210,5 +210,6 @@ int save_to_file(const Student *head) {
     /* 步骤 4：清理备份 */
     remove(BACKUP_FILE);
 
+    mark_data_clean();
     return 0;
 }

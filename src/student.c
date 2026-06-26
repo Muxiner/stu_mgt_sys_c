@@ -7,6 +7,12 @@
 
 #include "student.h"
 
+static int data_dirty = 0;   /* 是否有未保存的修改 */
+
+void mark_data_dirty(void) { data_dirty = 1; }
+void mark_data_clean(void) { data_dirty = 0; }
+int  is_data_dirty(void)    { return data_dirty; }
+
 /*
  * 创建并初始化一个新结点。
  * 分配内存后将 next 置 NULL，调用者负责将其链入链表。
@@ -89,11 +95,7 @@ int add_student(Student **head) {
     node->next = *head;
     *head = node;
     printf("[OK] 学生 %s (学号: %d) 添加成功。\n", node->name, node->id);
-
-    /* 自动持久化 */
-    if (save_to_file(*head) != 0) {
-        printf("[!] 自动保存失败，但内存数据已更新。\n");
-    }
+    mark_data_dirty();
     return 0;
 }
 
@@ -179,10 +181,7 @@ int delete_student(Student **head) {
 
     printf("[OK] 学生 %s (学号: %d) 已删除。\n", cur->name, cur->id);
     free(cur);
-
-    if (save_to_file(*head) != 0) {
-        printf("[!] 自动保存失败，但内存数据已更新。\n");
-    }
+    mark_data_dirty();
     return 0;
 }
 
@@ -275,10 +274,7 @@ int modify_student(Student *head) {
         return -1;
 
     printf("[OK] 学生信息已更新。\n");
-
-    if (save_to_file(head) != 0) {
-        printf("[!] 自动保存失败，但内存数据已更新。\n");
-    }
+    mark_data_dirty();
     return 0;
 }
 

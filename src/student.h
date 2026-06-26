@@ -94,6 +94,11 @@ void      free_list(Student **head);
 int load_from_file(Student **head);
 int save_to_file(const Student *head);
 
+/* ---- 脏数据标记 (student.c) ---- */
+void mark_data_dirty(void);
+void mark_data_clean(void);
+int  is_data_dirty(void);
+
 /* ---- 菜单 (menu.c) ---- */
 void print_menu(void);
 

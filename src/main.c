@@ -58,8 +58,19 @@ static int do_menu_action(Student **head, int choice) {
     case 8:
         if (save_to_file(*head) == 0)
             printf("[OK] 数据已手动保存。\n");
+        else
+            printf("[!] 保存失败。\n");
         break;
     case 0:
+        if (is_data_dirty()) {
+            printf("\n有未保存的修改。\n");
+            char buf[8];
+            if (safe_get_string("是否保存后退出? (y/n): ", buf, sizeof(buf)) == 0
+                && (buf[0] == 'y' || buf[0] == 'Y')) {
+                if (save_to_file(*head) == 0)
+                    printf("[OK] 数据已保存。\n");
+            }
+        }
         printf("正在退出...\n");
         return -1;
     default: break;
@@ -87,9 +98,6 @@ int main(void) {
         }
     } while (do_menu_action(&head, choice) == 0);
 
-    if (save_to_file(head) != 0) {
-        printf("[!] 退出前保存失败，部分数据可能丢失。\n");
-    }
     free_list(&head);
     printf("系统已安全退出。\n");
     return 0;

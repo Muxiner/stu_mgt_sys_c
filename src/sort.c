@@ -204,11 +204,17 @@ static void sort_merge(Student **head, int field, int order) {
     *head = sort_merge_rec(*head);
 }
 
+/* 三路分区链表结点对（head + tail） */
+struct PartitionList {
+    Student *head;
+    Student *tail;
+};
+
 /* ---- 快速排序辅助：三路分区 ---- */
 static void partition_three_way(Student *pivot,
-                                 Student **less, Student **less_tail,
-                                 Student **equal, Student **equal_tail,
-                                 Student **greater, Student **greater_tail) {
+                                 struct PartitionList *less,
+                                 struct PartitionList *equal,
+                                 struct PartitionList *greater) {
     Student *cur = pivot->next;
     while (cur) {
         Student *next = cur->next;
@@ -216,14 +222,14 @@ static void partition_three_way(Student *pivot,
         int cmp = _cmp(cur, pivot);
 
         if (cmp < 0) {
-            if (!*less) { *less = cur; *less_tail = cur; }
-            else        { (*less_tail)->next = cur; *less_tail = cur; }
+            if (!less->head) { less->head = cur; less->tail = cur; }
+            else             { less->tail->next = cur; less->tail = cur; }
         } else if (cmp == 0) {
-            if (!*equal) { *equal = cur; *equal_tail = cur; }
-            else         { (*equal_tail)->next = cur; *equal_tail = cur; }
+            if (!equal->head) { equal->head = cur; equal->tail = cur; }
+            else              { equal->tail->next = cur; equal->tail = cur; }
         } else {
-            if (!*greater) { *greater = cur; *greater_tail = cur; }
-            else           { (*greater_tail)->next = cur; *greater_tail = cur; }
+            if (!greater->head) { greater->head = cur; greater->tail = cur; }
+            else                { greater->tail->next = cur; greater->tail = cur; }
         }
         cur = next;
     }
@@ -234,33 +240,33 @@ static Student* sort_quick_rec(Student *head) {
     if (!head || !head->next) return head;
 
     Student *pivot = head;
-    Student *less = NULL, *equal = NULL, *greater = NULL;
-    Student *less_tail = NULL, *equal_tail = NULL, *greater_tail = NULL;
+    struct PartitionList less = {NULL, NULL};
+    struct PartitionList equal = {NULL, NULL};
+    struct PartitionList greater = {NULL, NULL};
 
-    partition_three_way(pivot, &less, &less_tail,
-                        &equal, &equal_tail, &greater, &greater_tail);
+    partition_three_way(pivot, &less, &equal, &greater);
 
     /* pivot 自身链入 equal 链表头部 */
-    pivot->next = equal;
-    equal = pivot;
-    if (!equal_tail) equal_tail = pivot;
+    pivot->next = equal.head;
+    equal.head = pivot;
+    if (!equal.tail) equal.tail = pivot;
 
     /* 递归排序 less 和 greater */
-    less    = sort_quick_rec(less);
-    greater = sort_quick_rec(greater);
+    less.head    = sort_quick_rec(less.head);
+    greater.head = sort_quick_rec(greater.head);
 
     /* 拼接：less → equal → greater */
     Student *result;
-    if (less) {
-        result = less;
+    if (less.head) {
+        result = less.head;
         /* 找到 less 尾 */
-        Student *t = less;
+        Student *t = less.head;
         while (t->next) t = t->next;
-        t->next = equal;
+        t->next = equal.head;
     } else {
-        result = equal;
+        result = equal.head;
     }
-    equal_tail->next = greater;
+    equal.tail->next = greater.head;
 
     return result;
 }

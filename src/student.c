@@ -190,13 +190,15 @@ int delete_student(Student **head) {
  * 可选的整数字段修改：空输入跳过，否则解析并校验范围。
  * 返回 0 成功/跳过，-1 EOF。
  */
+struct IntRange { int min, max; };
+
 static int modify_optional_int(const char *prompt, char *buf, size_t buf_size,
-                                int min_val, int max_val, int *dest) {
+                                struct IntRange range, int *dest) {
     if (safe_get_string_allow_empty(prompt, buf, buf_size) != 0) return -1;
     if (buf[0] == '\0') return 0;
     char *endptr;
     long val = strtol(buf, &endptr, 10);
-    if (endptr != buf && *endptr == '\0' && val >= min_val && val <= max_val) {
+    if (endptr != buf && *endptr == '\0' && val >= range.min && val <= range.max) {
         *dest = (int)val;
     } else {
         printf("[!] 输入无效，保留原值。\n");
@@ -207,13 +209,15 @@ static int modify_optional_int(const char *prompt, char *buf, size_t buf_size,
 /*
  * 可选的浮点字段修改：空输入跳过，否则解析并校验范围。
  */
+struct FloatRange { float min, max; };
+
 static int modify_optional_float(const char *prompt, char *buf, size_t buf_size,
-                                  float min_val, float max_val, float *dest) {
+                                  struct FloatRange range, float *dest) {
     if (safe_get_string_allow_empty(prompt, buf, buf_size) != 0) return -1;
     if (buf[0] == '\0') return 0;
     char *endptr;
     float val = strtof(buf, &endptr);
-    if (endptr != buf && *endptr == '\0' && val >= min_val && val <= max_val) {
+    if (endptr != buf && *endptr == '\0' && val >= range.min && val <= range.max) {
         *dest = val;
     } else {
         printf("[!] 输入无效，保留原值。\n");
@@ -262,11 +266,13 @@ int modify_student(Student *head) {
 
     /* 修改年龄：空输入跳过，否则校验范围 */
     if (modify_optional_int("新年龄 (0~150): ", buf, sizeof(buf),
-                             MIN_AGE, MAX_AGE, &s->age) != 0) return -1;
+                             (struct IntRange){MIN_AGE, MAX_AGE}, &s->age) != 0)
+        return -1;
 
     /* 修改成绩：空输入跳过，否则校验范围 */
     if (modify_optional_float("新成绩 (0~100): ", buf, sizeof(buf),
-                               MIN_SCORE, MAX_SCORE, &s->score) != 0) return -1;
+                               (struct FloatRange){MIN_SCORE, MAX_SCORE}, &s->score) != 0)
+        return -1;
 
     printf("[OK] 学生信息已更新。\n");
 

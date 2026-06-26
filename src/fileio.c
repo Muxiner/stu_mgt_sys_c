@@ -15,13 +15,20 @@
 
 #include "student.h"
 
+/* 解析出的记录临时结构，用于在 parse_record_line 和 append_new_node 间传递 */
+struct ParsedRecord {
+    int   id;
+    char  name[NAME_LEN];
+    char  gender[GENDER_LEN];
+    int   age;
+    float score;
+};
+
 /* 前向声明 */
 static int  parse_record_line(const char *line, int line_no, Student *head,
-                               int *id, char *name, char *gender,
-                               int *age, float *score);
+                               struct ParsedRecord *rec);
 static Student* append_new_node(Student **head, Student **tail,
-                                 int id, const char *name, const char *gender,
-                                 int age, float score);
+                                 const struct ParsedRecord *rec);
 static void rollback_on_write_failure(int has_backup);
 
 /*
@@ -53,15 +60,12 @@ int load_from_file(Student **head) {
         if (len > 0 && line[len - 1] == '\n') line[len - 1] = '\0';
         if (line[0] == '\0') continue;   /* 跳过空行 */
 
-        int id, age;
-        float score;
-        char name[NAME_LEN], gender[GENDER_LEN];
+        struct ParsedRecord rec;
 
-        if (parse_record_line(line, line_no, *head,
-                              &id, name, gender, &age, &score) != 0)
+        if (parse_record_line(line, line_no, *head, &rec) != 0)
             continue;
 
-        if (!append_new_node(head, &tail, id, name, gender, age, score)) {
+        if (!append_new_node(head, &tail, &rec)) {
             fclose(fp);
             return -1;
         }
@@ -81,27 +85,27 @@ int load_from_file(Student **head) {
  * 返回 0 表示解析成功，-1 表示该行应跳过（已输出警告）。
  */
 static int parse_record_line(const char *line, int line_no, Student *head,
-                              int *id, char *name, char *gender,
-                              int *age, float *score) {
-    int matched = sscanf(line, "%d %31s %7s %d %f", id, name, gender, age, score);
+                              struct ParsedRecord *rec) {
+    int matched = sscanf(line, "%d %31s %7s %d %f",
+                         &rec->id, rec->name, rec->gender, &rec->age, &rec->score);
     if (matched != 5) {
         printf("[!] 第 %d 行字段数不正确，已跳过。\n", line_no);
         return -1;
     }
-    if (*age < MIN_AGE || *age > MAX_AGE) {
-        printf("[!] 第 %d 行年龄 %d 超出范围，已跳过。\n", line_no, *age);
+    if (rec->age < MIN_AGE || rec->age > MAX_AGE) {
+        printf("[!] 第 %d 行年龄 %d 超出范围，已跳过。\n", line_no, rec->age);
         return -1;
     }
-    if (*score < MIN_SCORE || *score > MAX_SCORE) {
-        printf("[!] 第 %d 行成绩 %.2f 超出范围，已跳过。\n", line_no, *score);
+    if (rec->score < MIN_SCORE || rec->score > MAX_SCORE) {
+        printf("[!] 第 %d 行成绩 %.2f 超出范围，已跳过。\n", line_no, rec->score);
         return -1;
     }
-    if (*id < MIN_ID || *id > MAX_ID) {
-        printf("[!] 第 %d 行学号 %d 无效，已跳过。\n", line_no, *id);
+    if (rec->id < MIN_ID || rec->id > MAX_ID) {
+        printf("[!] 第 %d 行学号 %d 无效，已跳过。\n", line_no, rec->id);
         return -1;
     }
-    if (search_by_id(head, *id)) {
-        printf("[!] 第 %d 行学号 %d 重复，已跳过。\n", line_no, *id);
+    if (search_by_id(head, rec->id)) {
+        printf("[!] 第 %d 行学号 %d 重复，已跳过。\n", line_no, rec->id);
         return -1;
     }
     return 0;
@@ -112,18 +116,17 @@ static int parse_record_line(const char *line, int line_no, Student *head,
  * 返回新结点指针，失败返回 NULL（内存不足）。
  */
 static Student* append_new_node(Student **head, Student **tail,
-                                 int id, const char *name, const char *gender,
-                                 int age, float score) {
+                                 const struct ParsedRecord *rec) {
     Student *node = create_node();
     if (!node) return NULL;
 
-    node->id = id;
-    strncpy(node->name, name, NAME_LEN - 1);
+    node->id = rec->id;
+    strncpy(node->name, rec->name, NAME_LEN - 1);
     node->name[NAME_LEN - 1] = '\0';
-    strncpy(node->gender, gender, GENDER_LEN - 1);
+    strncpy(node->gender, rec->gender, GENDER_LEN - 1);
     node->gender[GENDER_LEN - 1] = '\0';
-    node->age = age;
-    node->score = score;
+    node->age = rec->age;
+    node->score = rec->score;
 
     if (*tail) {
         (*tail)->next = node;

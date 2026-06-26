@@ -93,6 +93,12 @@ int add_student(Student **head) {
         return -1;
     }
 
+    /* --- 学院（米哈游游戏名） --- */
+    if (safe_get_string("学院: ", node->college, COLLEGE_LEN) != 0) {
+        free(node);
+        return -1;
+    }
+
     /* 头插法链入链表 + 哈希表 */
     node->next = *head;
     *head = node;
@@ -119,10 +125,12 @@ void display_all(const Student *head) {
     print_field("姓名", COL_NAME, 1); printf(" ");
     print_field("性别", COL_GENDER, 1); printf(" ");
     print_field("年龄", COL_AGE, 0); printf(" ");
-    print_field("成绩", COL_SCORE, 0); printf("\n");
+    print_field("成绩", COL_SCORE, 0); printf(" ");
+    print_field("学院", COL_COLLEGE, 1); printf("\n");
 
     /* 分隔线 */
-    int total = COL_ID + 1 + COL_NAME + 1 + COL_GENDER + 1 + COL_AGE + 1 + COL_SCORE;
+    int total = COL_ID+1 + COL_NAME+1 + COL_GENDER+1 + COL_AGE+1
+              + COL_SCORE+1 + COL_COLLEGE;
     for (int i = 0; i < total; i++) putchar('-');
     putchar('\n');
 
@@ -136,7 +144,8 @@ void display_all(const Student *head) {
         snprintf(buf, sizeof(buf), "%d", p->age);
         print_field(buf, COL_AGE, 0); printf(" ");
         snprintf(buf, sizeof(buf), "%.2f", p->score);
-        print_field(buf, COL_SCORE, 0); printf("\n");
+        print_field(buf, COL_SCORE, 0); printf(" ");
+        print_field(p->college, COL_COLLEGE, 1); printf("\n");
     }
     printf("\n");
 }
@@ -274,6 +283,13 @@ int modify_student(Student *head) {
                                (struct FloatRange){MIN_SCORE, MAX_SCORE}, &s->score) != 0)
         return -1;
 
+    /* 修改学院：空输入跳过 */
+    if (safe_get_string_allow_empty("新学院: ", buf, sizeof(buf)) != 0) return -1;
+    if (buf[0] != '\0') {
+        strncpy(s->college, buf, COLLEGE_LEN - 1);
+        s->college[COLLEGE_LEN - 1] = '\0';
+    }
+
     printf("[OK] 学生信息已更新。\n");
     mark_data_dirty();
     return 0;
@@ -326,6 +342,35 @@ void show_statistics(const Student *head) {
     printf("19-22岁:  %d (%.1f%%)\n", age_19_22, age_19_22 * 100.0f / count);
     printf("23-25岁:  %d (%.1f%%)\n", age_23_25, age_23_25 * 100.0f / count);
     printf("≥26岁:    %d (%.1f%%)\n", age_o25,   age_o25   * 100.0f / count);
+
+    /* --- 学院分布 --- */
+    printf("\n--- 学院分布 ---\n");
+    struct CollegeStat {
+        char name[COLLEGE_LEN];
+        int  cnt;
+    } cs[32];
+    int cs_count = 0;
+
+    for (const Student *p = head; p; p = p->next) {
+        int found = 0;
+        for (int i = 0; i < cs_count; i++) {
+            if (strcmp(cs[i].name, p->college) == 0) {
+                cs[i].cnt++;
+                found = 1;
+                break;
+            }
+        }
+        if (!found && cs_count < 32) {
+            strncpy(cs[cs_count].name, p->college, COLLEGE_LEN - 1);
+            cs[cs_count].name[COLLEGE_LEN - 1] = '\0';
+            cs[cs_count].cnt = 1;
+            cs_count++;
+        }
+    }
+    for (int i = 0; i < cs_count; i++) {
+        printf("  %-20s %d (%.1f%%)\n",
+               cs[i].name, cs[i].cnt, cs[i].cnt * 100.0f / count);
+    }
     printf("==============================\n\n");
 }
 

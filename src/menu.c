@@ -20,7 +20,7 @@ void print_menu(void) {
     printf("|  3. 按学号查找学生                      |\n");
     printf("|  4. 按学号删除学生                      |\n");
     printf("|  5. 按学号修改学生信息                  |\n");
-    printf("|  6. 排序（学号/姓名/年龄/成绩）          |\n");
+    printf("|  6. 排序（学号/姓名/年龄/成绩/学院）  |\n");
     printf("|  7. 统计信息                            |\n");
     printf("|  8. 手动保存                            |\n");
     printf("|  0. 退出系统                            |\n");

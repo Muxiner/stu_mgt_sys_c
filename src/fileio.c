@@ -23,6 +23,7 @@ struct ParsedRecord {
     char  gender[GENDER_LEN];
     int   age;
     float score;
+    char  college[COLLEGE_LEN];
 };
 
 /* 前向声明 */
@@ -87,9 +88,10 @@ int load_from_file(Student **head) {
  */
 static int parse_record_line(const char *line, int line_no,
                               struct ParsedRecord *rec) {
-    int matched = sscanf(line, "%d %31s %7s %d %f",
-                         &rec->id, rec->name, rec->gender, &rec->age, &rec->score);
-    if (matched != 5) {
+    int matched = sscanf(line, "%d %31s %7s %d %f %31s",
+                         &rec->id, rec->name, rec->gender,
+                         &rec->age, &rec->score, rec->college);
+    if (matched != 6) {
         printf("[!] 第 %d 行字段数不正确，已跳过。\n", line_no);
         return -1;
     }
@@ -128,6 +130,8 @@ static Student* append_new_node(Student **head, Student **tail,
     node->gender[GENDER_LEN - 1] = '\0';
     node->age = rec->age;
     node->score = rec->score;
+    strncpy(node->college, rec->college, COLLEGE_LEN - 1);
+    node->college[COLLEGE_LEN - 1] = '\0';
 
     if (*tail) {
         (*tail)->next = node;
@@ -188,8 +192,8 @@ int save_to_file(const Student *head) {
 
     int write_err = 0;
     for (const Student *p = head; p; p = p->next) {
-        if (fprintf(tmp, "%d %s %s %d %.2f\n",
-                    p->id, p->name, p->gender, p->age, p->score) < 0) {
+        if (fprintf(tmp, "%d %s %s %d %.2f %s\n",
+                    p->id, p->name, p->gender, p->age, p->score, p->college) < 0) {
             write_err = 1;
             break;
         }

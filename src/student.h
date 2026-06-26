@@ -22,6 +22,7 @@
  * ============================================================ */
 #define NAME_LEN      32     /* 姓名字段最大字节数 */
 #define GENDER_LEN    8      /* 性别字段最大字节数 */
+#define COLLEGE_LEN   32     /* 学院字段最大字节数 */
 #define INPUT_BUF_LEN 256    /* 通用输入缓冲区大小   */
 
 /* ============================================================
@@ -49,6 +50,7 @@
 #define COL_GENDER 8   /* 性别列宽 */
 #define COL_AGE    8   /* 年龄列宽 */
 #define COL_SCORE  10  /* 成绩列宽 */
+#define COL_COLLEGE 16 /* 学院列宽 */
 
 /* ============================================================
  * 数据结构：单向链表结点 + 哈希链
@@ -64,6 +66,7 @@ typedef struct Student {
     char   gender[GENDER_LEN];  /* 性别（"男"/"女"） */
     int    age;                 /* 年龄               */
     float  score;               /* 成绩（保留两位小数）*/
+    char   college[COLLEGE_LEN];/* 学院（游戏名称）   */
     struct Student *next;       /* 链表后继           */
     struct Student *hash_next;  /* 哈希表冲突链       */
 } Student;

@@ -29,10 +29,13 @@ static int cmp_fields(const Student *a, const Student *b, int field, int order) 
         result = (a->age > b->age) - (a->age < b->age);
         break;
     case 4: /* 成绩 */
-    default:
         if (a->score > b->score) result = 1;
         else if (a->score < b->score) result = -1;
         else result = 0;
+        break;
+    case 5: /* 学院 */
+    default:
+        result = strcmp(a->college, b->college);
         break;
     }
     /* 降序时反向 */
@@ -393,8 +396,8 @@ void sort_students(Student **head) {
     int field;
     printf("\n排序字段:\n");
     printf("  1) 学号    2) 姓名    3) 年龄\n");
-    printf("  4) 成绩\n");
-    if (safe_get_int("请选择: ", 1, 4, &field) != 0) return;
+    printf("  4) 成绩    5) 学院\n");
+    if (safe_get_int("请选择: ", 1, 5, &field) != 0) return;
 
     /* ---- 选择升降序 ---- */
     int order;

@@ -16,7 +16,7 @@ Thumbs.db
 
 # IDE/编辑器
 .idea/
+.cache/
 *.swp
 *.swo
 *~
-.vscode

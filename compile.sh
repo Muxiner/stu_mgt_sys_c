@@ -8,7 +8,7 @@
 
 set -euo pipefail
 
-SRC="src/main.c src/menu.c src/student.c src/input.c src/fileio.c src/display.c"
+SRC="src/main.c src/menu.c src/student.c src/sort.c src/input.c src/fileio.c src/display.c src/hash.c"
 TARGET="studentms"
 BUILD_DIR="build"
 

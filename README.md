@@ -10,11 +10,15 @@
 ## 编译
 
 ```bash
-# CMake（推荐）
+# 方式一：编译脚本（自动检测 CMake > GCC > Clang）
+./compile.sh              # 编译
+./compile.sh clean        # 清理编译产物
+
+# 方式二：CMake
 mkdir build && cd build && cmake .. && make
 
-# 手动编译
-gcc -Wall -Wextra -std=c99 -o studentms src/*.c
+# 方式三：手动编译
+gcc -Wall -Wextra -std=c99 -O2 -o studentms src/*.c
 ```
 
 产物为可执行文件 `studentms`。
@@ -154,6 +158,6 @@ typedef struct Student {
 | `src/` | 源代码目录（8 个 .c + 2 个 .h） |
 | `CMakeLists.txt` | CMake 构建配置 |
 | `students.txt` | 数据文件（6 字段，225 条记录） |
-| `compile.sh` | 备用编译脚本 |
+| `compile.sh` | 编译/清理脚本（自动检测编译器） |
 | `.gitignore` | Git 忽略规则 |
 | `设计文档.md` | 详细设计文档 |

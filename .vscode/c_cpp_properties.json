@@ -2,35 +2,19 @@
     "configurations": [
         {
             "name": "Mac",
-            "includePath": [
-                "${workspaceFolder}/include/**",
-                "${workspaceFolder}/src/**"
-            ],
-            "defines": [],
-            "macFrameworkPath": [],
-            "compilerPath": "/usr/bin/clang",
+            "compileCommands": "${workspaceFolder}/compile_commands.json",
             "cStandard": "c99",
             "intelliSenseMode": "macos-clang-arm64"
         },
         {
             "name": "Linux",
-            "includePath": [
-                "${workspaceFolder}/include/**",
-                "${workspaceFolder}/src/**"
-            ],
-            "defines": [],
-            "compilerPath": "/usr/bin/gcc",
+            "compileCommands": "${workspaceFolder}/compile_commands.json",
             "cStandard": "c99",
             "intelliSenseMode": "linux-gcc-x64"
         },
         {
             "name": "Win32",
-            "includePath": [
-                "${workspaceFolder}/include/**",
-                "${workspaceFolder}/src/**"
-            ],
-            "defines": [],
-            "compilerPath": "C:/MinGW/bin/gcc.exe",
+            "compileCommands": "${workspaceFolder}/compile_commands.json",
             "cStandard": "c99",
             "intelliSenseMode": "windows-gcc-x64"
         }

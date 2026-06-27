@@ -4,6 +4,7 @@ studentms
 studentms.exe
 *.o
 *.obj
+compile_commands.json
 
 # 临时文件
 students.bak

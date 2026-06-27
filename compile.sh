@@ -48,7 +48,7 @@ fi
 
 # ---- 检测编译器（无 CMake 时） ----
 CC_BIN=""
-CFLAGS="-Wall -Wextra -std=c99 -O2"
+CFLAGS="-Wall -Wextra -std=c99 -O2 -Iinclude"
 
 if command -v gcc &>/dev/null; then
     CC_BIN="gcc"

@@ -18,7 +18,7 @@
 mkdir build && cd build && cmake .. && make
 
 # 方式三：手动编译
-gcc -Wall -Wextra -std=c99 -O2 -o studentms src/*.c
+gcc -Wall -Wextra -std=c99 -O2 -Iinclude -o studentms src/*.c
 ```
 
 产物为可执行文件 `studentms`。
@@ -155,7 +155,7 @@ typedef struct Student {
 
 | 文件 | 用途 |
 |------|------|
-| `src/` | 源代码目录（8 个 .c + 2 个 .h） |
+| `include/` | 头文件目录（3 个 .h）|
 | `CMakeLists.txt` | CMake 构建配置 |
 | `students.txt` | 数据文件（6 字段，225 条记录） |
 | `compile.sh` | 编译/清理脚本（自动检测编译器） |

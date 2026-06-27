@@ -14,7 +14,6 @@ students.tmp
 Thumbs.db
 
 # IDE/编辑器
-.vscode/
 .idea/
 *.swp
 *.swo

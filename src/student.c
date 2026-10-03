@@ -9,11 +9,11 @@
 #include "hash.h"
 #include <stdio.h>
 
-static int data_dirty = 0;   /* 是否有未保存的修改 */
+static int g_data_dirty = 0;   /* 是否有未保存的修改 */
 
-void mark_data_dirty(void) { data_dirty = 1; }
-void mark_data_clean(void) { data_dirty = 0; }
-int  is_data_dirty(void)    { return data_dirty; }
+void mark_data_dirty(void) { g_data_dirty = 1; }
+void mark_data_clean(void) { g_data_dirty = 0; }
+int  is_data_dirty(void)   { return g_data_dirty; }
 
 /*
  * 创建并初始化一个新结点。
@@ -41,9 +41,15 @@ static int input_gender(const char *prompt, char *gender_buf, int allow_empty) {
         int rc = allow_empty
             ? safe_get_string_allow_empty(prompt, gender_buf, GENDER_LEN)
             : safe_get_string(prompt, gender_buf, GENDER_LEN);
-        if (rc != 0) return -1;
-        if (allow_empty && gender_buf[0] == '\0') return 0;
-        if (strcmp(gender_buf, "男") == 0 || strcmp(gender_buf, "女") == 0) return 0;
+        if (rc != 0) {
+            return -1;
+        }
+        if (allow_empty && gender_buf[0] == '\0') {
+            return 0;
+        }
+        if (strcmp(gender_buf, "男") == 0 || strcmp(gender_buf, "女") == 0) {
+            return 0;
+        }
         printf("[!] 性别只能输入\"男\"或\"女\"。\n");
     }
 }
@@ -57,7 +63,9 @@ static int input_gender(const char *prompt, char *gender_buf, int allow_empty) {
  */
 int add_student(Student **head) {
     Student *node = create_node();
-    if (!node) return -1;
+    if (!node) {
+        return -1;
+    }
 
     /* --- 学号：范围 + 唯一性 --- */
     if (safe_get_int("学号 (1~1999999999): ", MIN_ID, MAX_ID, &node->id) != 0) {
@@ -132,7 +140,9 @@ void display_all(const Student *head) {
     /* 分隔线 */
     int total = COL_ID+1 + COL_NAME+1 + COL_GENDER+1 + COL_AGE+1
               + COL_SCORE+1 + COL_COLLEGE;
-    for (int i = 0; i < total; i++) putchar('-');
+    for (int i = 0; i < total; i++) {
+        putchar('-');
+    }
     putchar('\n');
 
     /* 逐行输出 */
@@ -172,7 +182,9 @@ int delete_student(Student **head) {
     }
 
     int id;
-    if (safe_get_int("请输入要删除的学号: ", MIN_ID, MAX_ID, &id) != 0) return -1;
+    if (safe_get_int("请输入要删除的学号: ", MIN_ID, MAX_ID, &id) != 0) {
+        return -1;
+    }
 
     /* 查找目标结点及其前驱 */
     Student *prev = NULL, *cur = *head;
@@ -186,8 +198,11 @@ int delete_student(Student **head) {
     }
 
     /* 摘除结点 */
-    if (prev) prev->next = cur->next;
-    else      *head = cur->next;   /* 删除的是头结点 */
+    if (prev) {
+        prev->next = cur->next;
+    } else {
+        *head = cur->next;   /* 删除的是头结点 */
+    }
 
     printf("[OK] 学生 %s (学号: %d) 已删除。\n", cur->name, cur->id);
     hash_remove(cur->id);
@@ -204,8 +219,14 @@ struct IntRange { int min, max; };
 
 static int modify_optional_int(const char *prompt, char *buf, size_t buf_size,
                                 struct IntRange range, int *dest) {
-    if (safe_get_string_allow_empty(prompt, buf, buf_size) != 0) return -1;
-    if (buf[0] == '\0') return 0;
+    if (safe_get_string_allow_empty(prompt, buf, buf_size) != 0) {
+        return -1;
+    }
+
+    if (buf[0] == '\0') {
+        return 0;
+    }
+
     char *endptr;
     long val = strtol(buf, &endptr, 10);
     if (endptr != buf && *endptr == '\0' && val >= range.min && val <= range.max) {
@@ -223,8 +244,14 @@ struct FloatRange { float min, max; };
 
 static int modify_optional_float(const char *prompt, char *buf, size_t buf_size,
                                   struct FloatRange range, float *dest) {
-    if (safe_get_string_allow_empty(prompt, buf, buf_size) != 0) return -1;
-    if (buf[0] == '\0') return 0;
+    if (safe_get_string_allow_empty(prompt, buf, buf_size) != 0) {
+        return -1;
+    }
+
+    if (buf[0] == '\0') {
+        return 0;
+    }
+
     char *endptr;
     float val = strtof(buf, &endptr);
     if (endptr != buf && *endptr == '\0' && val >= range.min && val <= range.max) {
@@ -248,7 +275,9 @@ int modify_student(Student *head) {
     }
 
     int id;
-    if (safe_get_int("请输入要修改的学号: ", MIN_ID, MAX_ID, &id) != 0) return -1;
+    if (safe_get_int("请输入要修改的学号: ", MIN_ID, MAX_ID, &id) != 0) {
+        return -1;
+    }
 
     Student *s = search_by_id(id);
     if (!s) {
@@ -261,14 +290,20 @@ int modify_student(Student *head) {
     char buf[INPUT_BUF_LEN];
 
     /* 修改姓名：空输入即跳过 */
-    if (safe_get_string_allow_empty("新姓名: ", buf, sizeof(buf)) != 0) return -1;
+    if (safe_get_string_allow_empty("新姓名: ", buf, sizeof(buf)) != 0) {
+        return -1;
+    }
+
     if (buf[0] != '\0') {
         strncpy(s->name, buf, NAME_LEN - 1);
         s->name[NAME_LEN - 1] = '\0';
     }
 
     /* 修改性别：空输入跳过，否则校验"男"/"女" */
-    if (input_gender("新性别 (男/女): ", buf, 1) != 0) return -1;
+    if (input_gender("新性别 (男/女): ", buf, 1) != 0) {
+        return -1;
+    }
+
     if (buf[0] != '\0') {
         strncpy(s->gender, buf, GENDER_LEN - 1);
         s->gender[GENDER_LEN - 1] = '\0';
@@ -276,23 +311,29 @@ int modify_student(Student *head) {
 
     /* 修改年龄：空输入跳过，否则校验范围 */
     if (modify_optional_int("新年龄 (0~150): ", buf, sizeof(buf),
-                             (struct IntRange){MIN_AGE, MAX_AGE}, &s->age) != 0)
+                             (struct IntRange){MIN_AGE, MAX_AGE}, &s->age) != 0) {
         return -1;
-
+    }
     /* 修改成绩：空输入跳过，否则校验范围 */
     if (modify_optional_float("新成绩 (0~100): ", buf, sizeof(buf),
-                               (struct FloatRange){MIN_SCORE, MAX_SCORE}, &s->score) != 0)
+                               (struct FloatRange){MIN_SCORE, MAX_SCORE}, &s->score) != 0) {
         return -1;
+    }
 
     /* 修改学院：空输入跳过 */
-    if (safe_get_string_allow_empty("新学院: ", buf, sizeof(buf)) != 0) return -1;
+    if (safe_get_string_allow_empty("新学院: ", buf, sizeof(buf)) != 0) {
+        return -1;
+    }
+
     if (buf[0] != '\0') {
         strncpy(s->college, buf, COLLEGE_LEN - 1);
         s->college[COLLEGE_LEN - 1] = '\0';
     }
 
     printf("[OK] 学生信息已更新。\n");
+
     mark_data_dirty();
+
     return 0;
 }
 

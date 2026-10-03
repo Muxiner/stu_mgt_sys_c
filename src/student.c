@@ -365,7 +365,8 @@ void show_statistics(const Student *head) {
     printf("\n========== 年龄分布 ==========\n");
     print_field("年龄段", LW, 1);
     print_field("人数（百分比）", LW, 1);
-    printf("\n");
+    printf("\n——————————————————————————————\n");
+
     snprintf(buf, sizeof(buf), "%d (%.1f%%)", age_u18, age_u18 * 100.0f / count);
     print_field("≤18岁:", LW, 1); printf("%s\n", buf);
     snprintf(buf, sizeof(buf), "%d (%.1f%%)", age_19_22, age_19_22 * 100.0f / count);
@@ -379,7 +380,7 @@ void show_statistics(const Student *head) {
     printf("\n========== 学院分布 ==========\n");
     print_field("学院名称", LW, 1);
     print_field("人数（百分比）", LW, 1);
-    printf("\n");
+    printf("\n——————————————————————————————\n");
 
     struct CollegeStat {
         char name[COLLEGE_LEN];

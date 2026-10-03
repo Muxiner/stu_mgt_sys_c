@@ -69,7 +69,7 @@ fi
 
 # ---- 编译 ----
 echo "[INFO] 编译命令: $CC_BIN $CFLAGS -o $TARGET $SRC"
-if $CC_BIN $CFLAGS -o "$TARGET" "$SRC"; then
+if $CC_BIN $CFLAGS -o "$TARGET" $SRC; then
     echo ""
     echo "[OK] 编译成功 -> ./$TARGET"
 else

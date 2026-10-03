@@ -7,6 +7,7 @@
 
 #include "student.h"
 #include "hash.h"
+#include <stdio.h>
 
 static int data_dirty = 0;   /* 是否有未保存的修改 */
 
@@ -301,7 +302,7 @@ int modify_student(Student *head) {
  */
 void show_statistics(const Student *head) {
     if (!head) {
-        printf("(暂无学生记录，无法统计)\n");
+        printf("[!] (暂无学生记录，无法统计)\n");
         return;
     }
 
@@ -313,31 +314,45 @@ void show_statistics(const Student *head) {
     for (const Student *p = head; p; p = p->next) {
         count++;
         total += p->score;
-        if (p->score > max_score) max_score = p->score;
-        if (p->score < min_score) min_score = p->score;
-        if (p->score < 60.0f) fail_count++;
+        if (p->score > max_score) {
+                max_score = p->score;
+        }
+        if (p->score < min_score) {
+            min_score = p->score;
+        }
+        if (p->score < 60.0f) {
+            fail_count++;
+        }
 
-        if (strcmp(p->gender, "男") == 0) male++;
-        else female++;
+        if (strcmp(p->gender, "男") == 0) {
+            male++;
+        } else {
+            female++;
+        }
 
-        if (p->age <= 18)      age_u18++;
-        else if (p->age <= 22) age_19_22++;
-        else if (p->age <= 25) age_23_25++;
-        else                   age_o25++;
+        if (p->age <= 18) {
+            age_u18++;
+        } else if (p->age <= 22) {
+            age_19_22++;
+        } else if (p->age <= 25) {
+            age_23_25++;
+        } else {
+            age_o25++;
+        }
     }
 
-#define LW 13  /* 标签列宽（显示列，含冒号） */
+#define LW 18  /* 标签列宽（显示列，含冒号） */
     char buf[64];
 
-    printf("\n========== 统计信息 ==========\n");
+    printf("\n========== 人数统计 ==========\n");
     snprintf(buf, sizeof(buf), "%d", count);
     print_field("总人数:", LW, 1); printf("%s\n", buf);
-    snprintf(buf, sizeof(buf), "%d (%.1f%%)", male, male*100.0f/count);
+    snprintf(buf, sizeof(buf), "%d (%.1f%%)", male, male * 100.0f / count);
     print_field("男生人数:", LW, 1); printf("%s\n", buf);
-    snprintf(buf, sizeof(buf), "%d (%.1f%%)", female, female*100.0f/count);
+    snprintf(buf, sizeof(buf), "%d (%.1f%%)", female, female * 100.0f / count);
     print_field("女生人数:", LW, 1); printf("%s\n", buf);
 
-    printf("\n--- 成绩统计 ---\n");
+    printf("\n========== 成绩统计 ==========\n");
     snprintf(buf, sizeof(buf), "%.2f", total / count);
     print_field("平均分:", LW, 1); printf("%s\n", buf);
     snprintf(buf, sizeof(buf), "%.2f", max_score);
@@ -347,18 +362,25 @@ void show_statistics(const Student *head) {
     snprintf(buf, sizeof(buf), "%d (<60分)", fail_count);
     print_field("不及格人数:", LW, 1); printf("%s\n", buf);
 
-    printf("\n--- 年龄分布 ---\n");
-    snprintf(buf, sizeof(buf), "%d (%.1f%%)", age_u18, age_u18*100.0f/count);
+    printf("\n========== 年龄分布 ==========\n");
+    print_field("年龄段", LW, 1);
+    print_field("人数（百分比）", LW, 1);
+    printf("\n");
+    snprintf(buf, sizeof(buf), "%d (%.1f%%)", age_u18, age_u18 * 100.0f / count);
     print_field("≤18岁:", LW, 1); printf("%s\n", buf);
-    snprintf(buf, sizeof(buf), "%d (%.1f%%)", age_19_22, age_19_22*100.0f/count);
+    snprintf(buf, sizeof(buf), "%d (%.1f%%)", age_19_22, age_19_22 * 100.0f / count);
     print_field("19-22岁:", LW, 1); printf("%s\n", buf);
-    snprintf(buf, sizeof(buf), "%d (%.1f%%)", age_23_25, age_23_25*100.0f/count);
+    snprintf(buf, sizeof(buf), "%d (%.1f%%)", age_23_25, age_23_25 * 100.0f / count);
     print_field("23-25岁:", LW, 1); printf("%s\n", buf);
-    snprintf(buf, sizeof(buf), "%d (%.1f%%)", age_o25, age_o25*100.0f/count);
+    snprintf(buf, sizeof(buf), "%d (%.1f%%)", age_o25, age_o25 * 100.0f / count);
     print_field("≥26岁:", LW, 1); printf("%s\n", buf);
 
     /* --- 学院分布 --- */
-    printf("\n--- 学院分布 ---\n");
+    printf("\n========== 学院分布 ==========\n");
+    print_field("学院名称", LW, 1);
+    print_field("人数（百分比）", LW, 1);
+    printf("\n");
+
     struct CollegeStat {
         char name[COLLEGE_LEN];
         int  cnt;
@@ -374,17 +396,18 @@ void show_statistics(const Student *head) {
                 break;
             }
         }
-        if (!found && cs_count < 32) {
+        if ((!found) && (cs_count < 32)) {
             strncpy(cs[cs_count].name, p->college, COLLEGE_LEN - 1);
             cs[cs_count].name[COLLEGE_LEN - 1] = '\0';
             cs[cs_count].cnt = 1;
             cs_count++;
         }
     }
+
     for (int i = 0; i < cs_count; i++) {
         snprintf(buf, sizeof(buf), "%d (%.1f%%)",
                  cs[i].cnt, cs[i].cnt * 100.0f / count);
-        print_field(cs[i].name, LW + 6, 1);
+        print_field(cs[i].name, LW, 1);
         printf("%s\n", buf);
     }
 #undef LW

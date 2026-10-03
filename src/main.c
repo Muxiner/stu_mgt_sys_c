@@ -37,45 +37,77 @@ static void print_student_table_row(const Student *s) {
     print_field(s->college, COL_COLLEGE, 1); printf("\n");
 }
 
+static void menu_search_student(void) {
+    int id;
+    if (safe_get_int("请输入要查找的学号: ", MIN_ID, MAX_ID, &id) != 0) {
+        return;
+    }
+
+    Student *s = search_by_id(id);
+
+    if (s) {
+        print_student_table_row(s);
+    } else {
+        printf("[!] 未找到学号为 %d 的学生。\n", id);
+    }
+}
+
+static void menu_save_stus_info(Student **head) {
+    if (save_to_file(*head) == 0) {
+        printf("[OK] 数据已手动保存。\n");
+    } else {
+        printf("[!] 保存失败。\n");
+    }
+}
+
+static void menu_quit(Student **head) {
+    if (is_data_dirty()) {
+        printf("\n有未保存的修改。\n");
+        char buf[8];
+        if (safe_get_string("是否保存后退出? (y/n): ", buf, sizeof(buf)) == 0
+            && (buf[0] == 'y' || buf[0] == 'Y')) {
+            if (save_to_file(*head) == 0)
+                printf("[OK] 数据已保存。\n");
+        }
+    }
+    printf("正在退出...\n");
+}
+
 /*
  * 执行用户选择的菜单操作。
  * 返回 0 继续运行，-1 退出程序。
  */
 static int do_menu_action(Student **head, int choice) {
     switch (choice) {
-    case 1: add_student(head);       break;
-    case 2: display_all(*head);      break;
-    case 3: {
-        int id;
-        if (safe_get_int("请输入要查找的学号: ", MIN_ID, MAX_ID, &id) != 0) break;
-        Student *s = search_by_id(id);
-        if (s) print_student_table_row(s);
-        else   printf("[!] 未找到学号为 %d 的学生。\n", id);
-        break;
-    }
-    case 4: delete_student(head);    break;
-    case 5: modify_student(*head);   break;
-    case 6: sort_students(head);     break;
-    case 7: show_statistics(*head);  break;
-    case 8:
-        if (save_to_file(*head) == 0)
-            printf("[OK] 数据已手动保存。\n");
-        else
-            printf("[!] 保存失败。\n");
-        break;
-    case 0:
-        if (is_data_dirty()) {
-            printf("\n有未保存的修改。\n");
-            char buf[8];
-            if (safe_get_string("是否保存后退出? (y/n): ", buf, sizeof(buf)) == 0
-                && (buf[0] == 'y' || buf[0] == 'Y')) {
-                if (save_to_file(*head) == 0)
-                    printf("[OK] 数据已保存。\n");
-            }
+        case 1:
+            add_student(head);
+            break;
+        case 2:
+            display_all(*head);
+            break;
+        case 3: {
+            menu_search_student();
+            break;
         }
-        printf("正在退出...\n");
-        return -1;
-    default: break;
+        case 4:
+            delete_student(head);
+            break;
+        case 5:
+            modify_student(*head);
+            break;
+        case 6:
+            sort_students(head);
+            break;
+        case 7:
+            show_statistics(*head);
+            break;
+        case 8:
+            menu_save_stus_info(head);
+            break;
+        case 0:
+            menu_quit(head);
+            return -1;
+        default: break;
     }
     return 0;
 }

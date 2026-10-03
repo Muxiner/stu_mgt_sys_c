@@ -7,6 +7,7 @@
  */
 
 #include "student.h"
+#include <locale.h>
 
 /*
  * 计算字符串在终端中的显示列宽。
@@ -37,8 +38,9 @@ int str_display_width(const char *s) {
             } else {
                 w += 2;
                 /* 跳过 UTF-8 续字节 (0x80~0xBF)，用 p[1] 预查防越界 */
-                while ((unsigned char)p[1] >= 0x80 && (unsigned char)p[1] < 0xC0)
+                while ((unsigned char)p[1] >= 0x80 && (unsigned char)p[1] < 0xC0) {
                     p++;
+                }
             }
         }
         return w;
@@ -60,7 +62,9 @@ int str_display_width(const char *s) {
 void print_field(const char *s, int col_width, int left_align) {
     int dw = str_display_width(s);
     int pad = col_width - dw;
-    if (pad < 0) pad = 0;   /* 内容超宽时不截断 */
+    if (pad < 0) {
+        pad = 0;   /* 内容超宽时不截断 */
+    }
 
     if (left_align) {
         /* 左对齐：内容 + 填充空格 */

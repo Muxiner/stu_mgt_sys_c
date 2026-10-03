@@ -124,13 +124,19 @@ int safe_get_int(const char *prompt, int min_val, int max_val, int *out) {
 
     while (1) {
         printf("%s", prompt);
-        if (!fgets(buf, sizeof(buf), stdin)) return -1;
+        if (!fgets(buf, sizeof(buf), stdin)) {
+            return -1;
+        }
 
         /* 检测并处理超长输入 */
-        if (buf[strlen(buf) - 1] != '\n') flush_stdin();
+        if (buf[strlen(buf) - 1] != '\n') {
+            flush_stdin();
+        }
 
         size_t len = strlen(buf);
-        if (len > 0 && buf[len - 1] == '\n') buf[len - 1] = '\0';
+        if ((len > 0) && (buf[len - 1] == '\n')) {
+            buf[len - 1] = '\0';
+        }
 
         if (buf[0] == '\0') {
             printf("[!] 输入不能为空。\n");
@@ -141,17 +147,17 @@ int safe_get_int(const char *prompt, int min_val, int max_val, int *out) {
         val = strtol(buf, &endptr, 10);
 
         /* 检查溢出 */
-        if (errno == ERANGE || val < INT_MIN || val > INT_MAX) {
+        if ((errno == ERANGE )|| (val < INT_MIN) || (val > INT_MAX)) {
             printf("[!] 数值超出范围。\n");
             continue;
         }
         /* 检查是否完全解析（endptr 指向 '\0' 才算成功） */
-        if (endptr == buf || *endptr != '\0') {
+        if ((endptr == buf) || (*endptr != '\0')) {
             printf("[!] 输入包含非数字字符，请输入整数。\n");
             continue;
         }
         /* 业务范围校验 */
-        if (val < min_val || val > max_val) {
+        if ((val < min_val) || (val > max_val)) {
             printf("[!] 数值必须在 %d ~ %d 之间。\n", min_val, max_val);
             continue;
         }

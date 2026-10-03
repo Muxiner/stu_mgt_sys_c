@@ -20,9 +20,11 @@ static void print_student_table_row(const Student *s) {
     print_field("成绩", COL_SCORE, 0); printf(" ");
     print_field("学院", COL_COLLEGE, 1); printf("\n");
 
-    int total = COL_ID+1 + COL_NAME+1 + COL_GENDER+1 + COL_AGE+1
-              + COL_SCORE+1 + COL_COLLEGE;
-    for (int i = 0; i < total; i++) putchar('-');
+    int total = (COL_ID + 1) + (COL_NAME + 1) + (COL_GENDER + 1) + (COL_AGE + 1)
+              + (COL_SCORE + 1) + COL_COLLEGE;
+    for (int i = 0; i < total; i++) {
+        putchar('-');
+    }
     putchar('\n');
 
     char buf[64];

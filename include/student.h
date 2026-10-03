@@ -15,7 +15,6 @@
 #include <errno.h>
 #include <limits.h>
 #include <wchar.h>
-#include <locale.h>
 
 /* ============================================================
  * 字段长度与缓冲区大小
@@ -45,12 +44,12 @@
 /* ============================================================
  * 表格显示列宽（以终端列数为单位，已考虑 CJK 字符宽度）
  * ============================================================ */
-#define COL_ID     10  /* 学号列宽 */
-#define COL_NAME   12  /* 姓名列宽 */
-#define COL_GENDER 8   /* 性别列宽 */
-#define COL_AGE    8   /* 年龄列宽 */
-#define COL_SCORE  10  /* 成绩列宽 */
-#define COL_COLLEGE 16 /* 学院列宽 */
+#define COL_ID      10  /* 学号列宽 */
+#define COL_NAME    12  /* 姓名列宽 */
+#define COL_GENDER  8   /* 性别列宽 */
+#define COL_AGE     8   /* 年龄列宽 */
+#define COL_SCORE   10  /* 成绩列宽 */
+#define COL_COLLEGE 16  /* 学院列宽 */
 
 /* ============================================================
  * 数据结构：单向链表结点 + 哈希链
@@ -87,7 +86,7 @@ int  safe_get_int(const char *prompt, int min_val, int max_val, int *out);
 int  safe_get_float(const char *prompt, float min_val, float max_val, float *out);
 
 /* ---- 链表操作 (student.c) ---- */
-Student* create_node(void);
+Student*  create_node(void);
 int       add_student(Student **head);
 void      display_all(const Student *head);
 Student*  search_by_id(int id);

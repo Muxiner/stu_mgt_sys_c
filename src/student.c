@@ -9,11 +9,11 @@
 #include "hash.h"
 #include <stdio.h>
 
-static int data_dirty = 0;   /* 是否有未保存的修改 */
+static int g_data_dirty = 0;   /* 是否有未保存的修改 */
 
-void mark_data_dirty(void) { data_dirty = 1; }
-void mark_data_clean(void) { data_dirty = 0; }
-int  is_data_dirty(void)   { return data_dirty; }
+void mark_data_dirty(void) { g_data_dirty = 1; }
+void mark_data_clean(void) { g_data_dirty = 0; }
+int  is_data_dirty(void)   { return g_data_dirty; }
 
 /*
  * 创建并初始化一个新结点。

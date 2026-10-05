@@ -25,4 +25,5 @@ void print_menu(void) {
     printf("|  8. 手动保存                            |\n");
     printf("|  0. 退出系统                            |\n");
     printf("+=========================================+\n");
+    printf("\n");
 }

@@ -20,7 +20,7 @@
  */
 void flush_stdin(void) {
     int c;
-    while ((c = getchar()) != '\n' && c != EOF) {}
+    while (((c = getchar()) != '\n') && (c != EOF)) {}
 }
 
 /*
@@ -39,11 +39,13 @@ void flush_stdin(void) {
 int safe_get_string(const char *prompt, char *buf, size_t buf_size) {
     while (1) {
         printf("%s", prompt);
-        if (!fgets(buf, (int)buf_size, stdin)) return -1;
+        if (!fgets(buf, (int)buf_size, stdin)) {
+            return -1;
+        }
 
         size_t len = strlen(buf);
         /* 末尾有换行说明输入未超过缓冲区，正常去除 */
-        if (len > 0 && buf[len - 1] == '\n') {
+        if ((len > 0) && (buf[len - 1] == '\n')) {
             buf[len - 1] = '\0';
             len--;
         } else {
@@ -58,12 +60,14 @@ int safe_get_string(const char *prompt, char *buf, size_t buf_size) {
 
         /* 去除首尾空白字符 */
         char *start = buf;
-        while (*start && isspace((unsigned char)*start)) start++;
+        while ((*start) && (isspace((unsigned char)*start))) {
+            start++;
+        }
         if (start > buf) {
             memmove(buf, start, strlen(start) + 1);
             len = strlen(buf);
         }
-        while (len > 0 && isspace((unsigned char)buf[len - 1])) {
+        while ((len > 0) && (isspace((unsigned char)buf[len - 1]))) {
             buf[--len] = '\0';
         }
 
@@ -83,10 +87,12 @@ int safe_get_string(const char *prompt, char *buf, size_t buf_size) {
  */
 int safe_get_string_allow_empty(const char *prompt, char *buf, size_t buf_size) {
     printf("%s", prompt);
-    if (!fgets(buf, (int)buf_size, stdin)) return -1;
+    if (!fgets(buf, (int)buf_size, stdin)) {
+        return -1;
+    }
 
     size_t len = strlen(buf);
-    if (len > 0 && buf[len - 1] == '\n') {
+    if ((len > 0) && (buf[len - 1] == '\n')) {
         buf[len - 1] = '\0';
         len--;
     } else {
@@ -94,12 +100,14 @@ int safe_get_string_allow_empty(const char *prompt, char *buf, size_t buf_size) 
     }
 
     char *start = buf;
-    while (*start && isspace((unsigned char)*start)) start++;
+    while ((*start) && (isspace((unsigned char)*start))) {
+        start++;
+    }
     if (start > buf) {
         memmove(buf, start, strlen(start) + 1);
         len = strlen(buf);
     }
-    while (len > 0 && isspace((unsigned char)buf[len - 1])) {
+    while ((len > 0) && (isspace((unsigned char)buf[len - 1]))) {
         buf[--len] = '\0';
     }
 
@@ -181,12 +189,18 @@ int safe_get_float(const char *prompt, float min_val, float max_val, float *out)
 
     while (1) {
         printf("%s", prompt);
-        if (!fgets(buf, sizeof(buf), stdin)) return -1;
+        if (!fgets(buf, sizeof(buf), stdin)) {
+            return -1;
+        }
 
-        if (buf[strlen(buf) - 1] != '\n') flush_stdin();
+        if (buf[strlen(buf) - 1] != '\n') {
+            flush_stdin();
+        }
 
         size_t len = strlen(buf);
-        if (len > 0 && buf[len - 1] == '\n') buf[len - 1] = '\0';
+        if ((len > 0) && (buf[len - 1] == '\n')) {
+            buf[len - 1] = '\0';
+        }
 
         if (buf[0] == '\0') {
             printf("[!] 输入不能为空。\n");
@@ -200,11 +214,11 @@ int safe_get_float(const char *prompt, float min_val, float max_val, float *out)
             printf("[!] 数值超出范围。\n");
             continue;
         }
-        if (endptr == buf || *endptr != '\0') {
+        if ((endptr == buf) || (*endptr != '\0')) {
             printf("[!] 输入包含非数字字符，请输入数字。\n");
             continue;
         }
-        if (val < min_val || val > max_val) {
+        if ((val < min_val) || (val > max_val)) {
             printf("[!] 数值必须在 %.2f ~ %.2f 之间。\n", min_val, max_val);
             continue;
         }

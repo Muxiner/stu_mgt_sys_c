@@ -8,7 +8,7 @@
 
 set -euo pipefail
 
-SRC="src/main.c src/menu.c src/student.c src/sort.c src/input.c src/fileio.c src/display.c src/hash.c"
+SRC=(src/*.c)
 TARGET="studentms"
 BUILD_DIR="build"
 
@@ -68,8 +68,8 @@ else
 fi
 
 # ---- 编译 ----
-echo "[INFO] 编译命令: $CC_BIN $CFLAGS -o $TARGET $SRC"
-if $CC_BIN $CFLAGS -o "$TARGET" $SRC; then
+echo "[INFO] 编译命令: $CC_BIN $CFLAGS -o $TARGET ${SRC[*]}"
+if $CC_BIN $CFLAGS -o "$TARGET" "${SRC[@]}"; then
     echo ""
     echo "[OK] 编译成功 -> ./$TARGET"
 else
